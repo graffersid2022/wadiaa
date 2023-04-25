@@ -1,0 +1,395 @@
+import React from "react";
+import LeftArrow from "../../../assets/images/left-arrow.png";
+import RightArrow from "../../../assets/images/right-arrow.png";
+import { useForm } from "react-hook-form";
+import axios from "axios";
+import COMMON from "../../Configs/Common";
+
+//import mui
+import {
+  Box,
+  Grid,
+  TextField,
+  Container,
+  Button,
+  FormHelperText,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Checkbox,
+  FormControlLabel
+} from "@mui/material";
+
+function Step2({ handleNext, handleBack, activeStep, user2, setUser2 }) {
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm(
+    {
+      defaultValues: {
+        apartment: user2?.current?.apartment,
+        building: user2?.current?.building,
+        city: user2?.current?.city,
+        country: user2?.current?.country,
+        poBox: user2?.current?.poBox,
+        postalCode: user2?.current?.postalCode,
+        state: user2?.current?.state,
+        street: user2?.current?.street,
+        country: user2?.permanent?.country,
+        line1: user2?.permanent?.line1,
+        line2: user2?.permanent?.line2,
+        postalCode: user2?.permanent?.postalCode
+      },
+    }
+  )
+  const token = localStorage.getItem("token");
+
+  const onSubmit = (data) => {
+    // updateUser(data);
+    console.log(data);
+
+    let passData = {
+      current: {
+        apartment: data.apartment,
+        building: data.building,
+        city: data.city,
+        country: data.country,
+        poBox: data.poBox,
+        postalCode: data.postalCode,
+        state: data.state,
+        street: data.street
+      },
+      permanent: {
+        country: data.companyRegistrationCountry,
+        line1: data.line1,
+        line2: data.line2,
+        postalCode: data.postalCode
+      }
+    }
+
+    axios({
+      method: "PATCH",
+      url: `${process.env.REACT_APP_UAT_URL}/${process.env.REACT_APP_TYPE_BUSINESS}/address`,
+      data: passData,
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+        ...COMMON.SECURITY_HEADERS
+      },
+    })
+      .then((response) => {
+        console.log(response)
+        if (response.status === 200) {
+          handleNext();
+          getAddressData();
+        }
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+  };
+
+
+  const getAddressData = () => {
+    axios({
+      method: "GET",
+      url: `${process.env.REACT_APP_UAT_URL}/${process.env.REACT_APP_TYPE_BUSINESS}/address`,
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+        ...COMMON.SECURITY_HEADERS
+      },
+    })
+      .then((response) => {
+        if (response.status === 200) {
+          setUser2({ ...user2, ...response.data })
+        }
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+  }
+
+  return (
+    <Box>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Container maxWidth="lg">
+          <Box
+            sx={{
+              color: "#151515",
+              fontWeight: "700",
+              fontSize: "16px",
+              width: "100%",
+            }}
+          >
+            Company Current Address
+          </Box>
+          <Grid container spacing={4}>
+            <Grid item xs={12} md={6} lg={4}>
+              <TextField
+                id="filled-basic"
+                label="Office/Unit number"
+                variant="filled"
+                fullWidth
+                className="step-input"
+                helperText="Provide the Office number (or) Building/Unit number"
+                {...register("apartment")}
+              />
+              <FormHelperText sx={{ color: "#ff3e3e" }}>{errors?.apartment ? errors?.apartment?.message : null}</FormHelperText>
+
+            </Grid>
+            <Grid item xs={12} md={6} lg={4}>
+              <TextField
+                id="filled-textarea"
+                label="House/Building name*"
+                multiline
+                variant="filled"
+                fullWidth
+                helperText="Name of the Building/Unit"
+                className="multiples-input"
+                {...register("building", {
+                  required: "House/Building name is Required",
+                })}
+              />
+              <FormHelperText sx={{ color: "#ff3e3e" }}>{errors?.building ? errors?.building?.message : null}</FormHelperText>
+            </Grid>
+            <Grid item xs={12} md={6} lg={4}>
+              <TextField
+                id="filled-basic"
+                label="Street Name*"
+                variant="filled"
+                fullWidth
+                className="step-input"
+                helperText="Name of the street"
+                {...register("street", {
+                  required: "Street Name is Required",
+                })}
+              />
+              <FormHelperText sx={{ color: "#ff3e3e" }}>{errors?.street ? errors?.street?.message : null}</FormHelperText>
+
+            </Grid>
+            <Grid item xs={12} md={6} lg={4}>
+              <TextField
+                id="filled-basic"
+                label="P.O. Box"
+                variant="filled"
+                fullWidth
+                className="step-input"
+                helperText="P.O Box number of the Company"
+                {...register("poBox")}
+              />
+              <FormHelperText sx={{ color: "#ff3e3e" }}>{errors?.poBox ? errors?.poBox?.message : null}</FormHelperText>
+            </Grid>
+            <Grid item xs={12} md={6} lg={4}>
+              <TextField
+                id="filled-basic"
+                label="Postal/​Zip Code"
+                variant="filled"
+                fullWidth
+                className="step-input"
+                helperText="Postal Code of the Company"
+                {...register("postalCode")}
+              />
+              {/* <FormHelperText sx={{ color: "#ff3e3e" }}>{errors?.postalCode ? errors?.postalCode?.message : null}</FormHelperText> */}
+            </Grid>
+            <Grid item xs={12} md={6} lg={4}>
+              <TextField
+                id="filled-basic"
+                label="City*"
+                variant="filled"
+                fullWidth
+                className="step-input"
+                helperText="Name of the City where the Company is located"
+                {...register("city", {
+                  required: "City is Required",
+                })}
+              />
+              <FormHelperText sx={{ color: "#ff3e3e" }}>{errors?.city ? errors?.city?.message : null}</FormHelperText>
+            </Grid>
+            <Grid item xs={12} md={6} lg={4}>
+              <TextField
+                id="filled-basic"
+                label="State/​Governorate"
+                variant="filled"
+                fullWidth
+                className="step-input"
+                helperText="Name of the State where the Company is located"
+                {...register("state")}
+              />
+              <FormHelperText sx={{ color: "#ff3e3e" }}>{errors?.state ? errors?.state?.message : null}</FormHelperText>
+            </Grid>
+            <Grid item xs={12} md={6} lg={4}>
+              <FormControl variant="filled" fullWidth>
+                <InputLabel
+                  id="demo-simple-select-filled-label"
+                  className="dropdown-label"
+                >
+                  Country*
+                </InputLabel>
+                <Select
+                  defaultValue={user2?.current?.country}
+                  labelId="demo-simple-select-filled-label"
+                  id="demo-simple-select-filled"
+                  className="raise-drop-down"
+                  {...register("country", {
+                    required: "Country is Required"
+                  })}
+                >
+                  {Object.keys(COMMON.COUNTRIES).map((key) => (
+                    <MenuItem value={key} className="color-menu">{COMMON.COUNTRIES[key]}</MenuItem>
+                  ))}
+                </Select>
+                <FormHelperText className="helper-text">
+                  Name of Country where the Company is located
+                </FormHelperText>
+                <FormHelperText sx={{ color: "#ff3e3e", m: 0 }}>
+                  {errors?.country
+                    ? errors?.country?.message
+                    : null}
+                </FormHelperText>
+              </FormControl>
+            </Grid>
+          </Grid>
+          <Box
+            sx={{
+              color: "#151515",
+              fontWeight: "700",
+              fontSize: "16px",
+              width: "100%",
+              mt: 4
+            }}
+          >
+            Company Permanent Address
+          </Box>
+          {/* <Box sx={{ mt: 1 }}>
+            <FormControlLabel control={<Checkbox className="login-checkbox"
+              {
+              ...register("checkbox")
+              }
+            />} label="Same as current address" sx={{ color: "#000" }} />
+            <FormHelperText sx={{ color: "#ff3e3e" }}>{errors?.checkbox ? errors?.checkbox?.message : null}</FormHelperText>
+          </Box> */}
+          <Grid container spacing={4}>
+            <Grid item xs={12} lg={12}>
+              <TextField
+                id="filled-textarea"
+                label="Company Address line 1*"
+                multiline
+                variant="filled"
+                fullWidth
+                helperText="Address for the Company"
+                className="multiples-input"
+                // {
+                // ...register(watch("checkbox") ? "apartment" : "line1", {
+                //   required: "Address line1 is Required",
+                // })
+                // }
+
+                {...register("line1", {
+                  required: "Address Line1 is Required",
+                })}
+
+              />
+              <FormHelperText sx={{ color: "#ff3e3e" }}>{errors?.line1 ? errors?.line1?.message : null}</FormHelperText>
+            </Grid>
+            <Grid item xs={12} lg={12}>
+              <TextField
+                id="filled-textarea"
+                label="Company headquarters address*"
+                multiline
+                variant="filled"
+                fullWidth
+                helperText="Company headquarters address"
+                className="multiples-input"
+                {...register("line2", {
+                  required: "Company headquarters address is Required",
+                })}
+              />
+              <FormHelperText sx={{ color: "#ff3e3e" }}>{errors?.line2 ? errors?.line2?.message : null}</FormHelperText>
+            </Grid>
+            <Grid item xs={12} md={6} lg={4}>
+              <TextField
+                id="filled-basic"
+                label="Company Postal Code*"
+                variant="filled"
+                fullWidth
+                className="step-input"
+                helperText="Postal Code of the Company"
+                {...register("postalCode", {
+                  required: "Postal/Zip Code is Required",
+                })}
+              />
+              <FormHelperText sx={{ color: "#ff3e3e" }}>{errors?.postalCode ? errors?.postalCode?.message : null}</FormHelperText>
+            </Grid>
+            <Grid item xs={12} md={6} lg={4}>
+              <FormControl variant="filled" fullWidth>
+                <InputLabel
+                  id="demo-simple-select-filled-label"
+                  className="dropdown-label"
+                >
+                  Registered Country*
+                </InputLabel>
+                <Select
+                  defaultValue={user2?.permanent?.country}
+                  labelId="demo-simple-select-filled-label"
+                  id="demo-simple-select-filled"
+                  className="raise-drop-down"
+                  {...register("companyRegistrationCountry", {
+                    required: "Registration Country is Required"
+                  })}
+                >
+                  {Object.keys(COMMON.COUNTRIES).map((key) => (
+                    <MenuItem value={key} className="color-menu">{COMMON.COUNTRIES[key]}</MenuItem>
+                  ))}
+                </Select>
+                <FormHelperText className="helper-text">
+                  Country where the Company is Registered
+                </FormHelperText>
+                <FormHelperText sx={{ color: "#ff3e3e", m: 0 }}>
+                  {errors?.companyRegistrationCountry
+                    ? errors?.companyRegistrationCountry?.message
+                    : null}
+                </FormHelperText>
+              </FormControl>
+            </Grid>
+          </Grid>
+
+        </Container>
+        <Box sx={{ pt: 2 }} className="step-bottom">
+          <Container maxWidth="lg" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Box sx={{ color: "#235AAC", borderBottom: "1px solid", cursor: "pointer" }}>
+              Back To Dashboard
+            </Box>
+            <Box>
+              <Button
+                color="inherit"
+                disabled={activeStep === 0}
+                onClick={handleBack}
+                sx={{ mr: 1 }}
+                className="back-btn"
+              >
+                <img src={LeftArrow} alt="leftArrow" className='arrow-image' />
+                Previous
+              </Button>
+              <Button
+                type="submit"
+                sx={{ mr: 1 }} className="next-btn">
+                Save & Proceed
+                <img src={RightArrow} alt="rightarrow" className='arrow-image' />
+              </Button>
+            </Box>
+
+          </Container>
+        </Box>
+      </form>
+    </Box >
+  );
+}
+
+export default Step2;
